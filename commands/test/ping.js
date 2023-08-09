@@ -1,6 +1,6 @@
 module.exports = {
-  name: 'ping',
-  run: (client, msg, args) => {
+  name: '핑',
+  run: (msg, args) => {
     msg.reply(`퐁`);
   }
 };
