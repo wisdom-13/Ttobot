@@ -1,8 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Op } = require('sequelize');
-const { Client, Collection, Events, Formatters, GatewayIntentBits, Partials } = require('discord.js');
-const { Users, CurrencyShop } = require('./dbObjects.js');
+const { Client, Events, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const { token } = require('./config.json');
 const prefix = '!';
 
@@ -15,7 +13,6 @@ const client = new Client({
   ],
   partials: [Partials.Channel],
 });
-
 
 client.commands = new Collection();
 
@@ -34,20 +31,18 @@ for (const folder of commandFolders) {
 }
 console.log(client.commands.map(c => c.name).join(', ') + ' 명령어가 로드됨.');
 
-// 준비
-client.on('ready', () => console.log(`${client.user.tag} 에 로그인됨`));
+// 이벤트 로드 
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-// 메세지 
-client.on('messageCreate', msg => {
-  if (msg.author.bot) return;
-  if (!msg.content.startsWith(prefix)) return;
-  if (msg.content.slice(0, prefix.length) !== prefix) return;
-
-  const args = msg.content.slice(prefix.length).trim().split(/ +/g);
-  const command = args.shift().toLowerCase();
-
-  let cmd = client.commands.get(command);
-  if (cmd) cmd.run(client, msg, args);
-})
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
+}
 
 client.login(token);
