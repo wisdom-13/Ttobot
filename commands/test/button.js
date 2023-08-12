@@ -2,7 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = re
 
 module.exports = {
   name: '버튼',
-  run: (msg, args) => {
+  run: (msg) => {
 
     const primary = new ButtonBuilder()
       .setCustomId('Primary')
